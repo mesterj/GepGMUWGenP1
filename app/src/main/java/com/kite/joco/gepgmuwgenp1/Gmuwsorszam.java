@@ -9,6 +9,10 @@ public class Gmuwsorszam {
     int id;
     String sorszam;
 
+    public Gmuwsorszam() {
+
+    }
+
     public Gmuwsorszam(int id, String sorszam) {
         this.id = id;
         this.sorszam = sorszam;

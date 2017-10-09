@@ -1,5 +1,6 @@
 package com.kite.joco.gepgmuwgenp1;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,12 +12,15 @@ import android.widget.Toast;
 import java.io.IOException;
 
 import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String LOGTAG = "SORSZAMTESZT";
     TextView tvAktSorszam;
     Button btnGet, btnSet;
+    public String sorszam ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,45 +45,90 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void getSorszam() {
-        String kiirandosorszam = getAktSorszam();
-        if (kiirandosorszam != null) {
-            tvAktSorszam.setText(kiirandosorszam);
+
+        new getSorszamAsync().execute();
+
+        /*if (sorszam != null) {
+            tvAktSorszam.setText(sorszam);
         } else {
             Toast.makeText(this,"Hiba a kommunikációban",Toast.LENGTH_SHORT).show();
-        }
+        }*/
+    }
+
+    void showSorszamValue(String s) {
+        tvAktSorszam.setText(s);
     }
 
     void setSorszam() {
-        String novelendoSorszam = getAktSorszam();
-        if (novelendoSorszam != null) {
-            AlfaNumSorGenerator asGen = new AlfaNumSorGenerator();
-            StringBuffer sb = new StringBuffer(novelendoSorszam);
-            StringBuffer kovSorszam = asGen.getNext(sb);
-            Log.i(LOGTAG,"Uj sorszam lesz: " + kovSorszam);
-            Gmuwsorszam uj = new Gmuwsorszam(1,kovSorszam.toString());
-            savenext(uj);
-        }
+        new SetNewSorszamAsync().execute();
+        new getSorszamAsync().execute();
+    }
 
+class getSorszamAsync extends AsyncTask<String,String,String> {
+    String asorszam;
+
+    @Override
+    protected String doInBackground(String... strings) {
+        asorszam = getAktSorszam();
+        return asorszam;
+    }
+
+    @Override
+    protected void onPostExecute(String s) {
+        showSorszamValue(asorszam);
     }
 
     String getAktSorszam(){
         Call<Gmuwsorszam> aktcall = GepService.getGepRestService().getSorszam();
-        Gmuwsorszam aktSorszam = null;
+
+        String tmpsorszam = "";
         try {
-           aktSorszam = aktcall.execute().body();
+            tmpsorszam = aktcall.execute().body().getSorszam();
+            Log.i(LOGTAG,"Kapott sorszám : " +tmpsorszam);
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
         }
-        return aktSorszam.getSorszam();
+        return tmpsorszam;
     }
 
-    void savenext(Gmuwsorszam g){
-        Call<Gmuwsorszam> editcall = GepService.getGepRestService().edit(g);
-        try {
-            editcall.execute().body();
-        } catch (IOException e) {
-            e.printStackTrace();
+}
+
+    class SetNewSorszamAsync extends AsyncTask<String,String,String> {
+        String asorszam;
+
+        @Override
+        protected String doInBackground(String... strings) {
+            asorszam = getAktSorszam();
+            return asorszam;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            showSorszamValue(asorszam);
+        }
+
+        String getAktSorszam(){
+            Call<Gmuwsorszam> aktcall = GepService.getGepRestService().getSorszam();
+
+            String tmpsorszam = "";
+            try {
+                tmpsorszam = aktcall.execute().body().getSorszam();
+                Log.i(LOGTAG,"Új generáláshoz kapott sorszám : " +tmpsorszam);
+                AlfaNumSorGenerator asGen = new AlfaNumSorGenerator();
+                StringBuffer sb = new StringBuffer(tmpsorszam);
+                StringBuffer kovSorszam = asGen.getNext(sb);
+                Log.i(LOGTAG,"Következő sorszám: " + kovSorszam);
+                Gmuwsorszam uj = new Gmuwsorszam(1,kovSorszam.toString());
+
+                Call<String> ujSorszam = GepService.getGepRestService().edit(uj);
+                int answercode = ujSorszam.execute().code();
+                Log.i(LOGTAG,"Answer code: " + answercode);
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return tmpsorszam;
         }
 
     }

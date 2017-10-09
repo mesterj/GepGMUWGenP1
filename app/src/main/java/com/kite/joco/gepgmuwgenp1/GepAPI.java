@@ -15,10 +15,11 @@ import retrofit2.http.PUT;
 public interface GepAPI {
 
 
-    //@Headers( "Content-Type: application/json")
+    //Edit tabletsorszam by id
     @PUT("entities.tabletsorszam/1")
-    Call<Gmuwsorszam> edit(@Body Gmuwsorszam gmuw);
+    Call<String> edit(@Body Gmuwsorszam gmuw);
 
+    // Get tabletsorszam
     @GET("entities.tabletsorszam/1")
     Call<Gmuwsorszam> getSorszam();
 }
