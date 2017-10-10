@@ -25,8 +25,8 @@ public class GepService {
         }*/
 
     public static GepAPI getGepRestService() {
-        //Retrofit retrofit = builder.client(httpClient).addConverterFactory(JacksonConverterFactory.create()).build();
-        Retrofit retrofit = builder.client(httpClient).addConverterFactory(GsonConverterFactory.create()).build();
+        Retrofit retrofit = builder.client(httpClient).addConverterFactory(JacksonConverterFactory.create()).build();
+        //Retrofit retrofit = builder.client(httpClient).addConverterFactory(GsonConverterFactory.create()).build();
         return retrofit.create(GepAPI.class);
     }
 }
